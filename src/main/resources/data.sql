@@ -14,4 +14,5 @@ INSERT INTO TRANSACTION (id, amount, customer_id, date) VALUES (8, 200, 1, '2023
 INSERT INTO TRANSACTION (id, amount, customer_id, date) VALUES (9, 80, 2, '2023-01-09');
 INSERT INTO TRANSACTION (id, amount, customer_id, date) VALUES (10, 150, 2, '2023-01-09');
 
-INSERT INTO TRANSACTION (id, amount, customer_id, date) VALUES (11, 40, 3, '2023-01-12');
+--INSERT INTO TRANSACTION (id, amount, customer_id, date) VALUES (11, 55, 3, '2022-11-12');
+--INSERT INTO TRANSACTION (id, amount, customer_id, date) VALUES (12, 120, 3, '2023-01-12');

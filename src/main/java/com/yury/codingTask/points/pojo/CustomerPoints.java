@@ -13,7 +13,7 @@ public class CustomerPoints {
     private long totalPoints;
 
     //key = month number, value = points
-    private Map<Integer, Long> monthlyPointsMap;
+    private Map<String, Long> monthlyPointsMap;
 
 }
 

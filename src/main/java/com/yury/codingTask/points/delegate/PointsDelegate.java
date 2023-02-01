@@ -27,17 +27,46 @@ public class PointsDelegate {
 
         Map<Long, Customer> customersMap = getCustomersMap();
 
-        Map<Long, List<Transaction>> customerTransactionsMap = getCustomerTransactionsMap(persistenceDelegate.getTransactionRepository().findAllFromDate(getStartDate()));
+        List<String> months = getMonths();
+
+        List<Transaction> transactions = persistenceDelegate.getTransactionRepository().findAllFromDate(getStartDate());
+
+        Map<Long, List<Transaction>> customerTransactionsMap = getCustomerTransactionsMap(transactions, customersMap);
 
         for (Map.Entry<Long, List<Transaction>> entry : customerTransactionsMap.entrySet()) {
             Customer customer = customersMap.get(entry.getKey());
 
-            customerPoints.add(getCustomerPoints(customer, entry.getValue()));
+            customerPoints.add(getCustomerPoints(customer, entry.getValue(), months));
         }
 
         response.setCustomerPointsList(customerPoints);
 
         return response;
+    }
+
+    private Map<String, Long> getEmptyMonthlyPointsMap(List<String> months) {
+
+        Map<String, Long> monthlyPointsMap = new LinkedHashMap<>();
+
+        for (String month : months) {
+            monthlyPointsMap.put(month, 0l);
+        }
+
+        return monthlyPointsMap;
+    }
+
+    private List<String> getMonths() {
+        Calendar calendar = Calendar.getInstance();
+
+        List<String> months = new ArrayList<>();
+
+        for (int i = 0; i < START_MONTHS; i++) {
+            String month = convertToLocalDate(calendar.getTime()).getMonth().toString();
+            months.add(month);
+
+            calendar.add(Calendar.MONTH, -1);
+        }
+        return months;
     }
 
     private Map<Long, Customer> getCustomersMap() {
@@ -51,43 +80,38 @@ public class PointsDelegate {
         return customersMap;
     }
 
-    private Map<Long, List<Transaction>> getCustomerTransactionsMap(final List<Transaction> transactions) {
+    private Map<Long, List<Transaction>> getCustomerTransactionsMap(final List<Transaction> transactions, final Map<Long, Customer> customersMap) {
+
         Map<Long, List<Transaction>> customerTransactionsMap = new HashMap<>();
 
-        for (Transaction transaction : transactions) {
-            if (customerTransactionsMap.containsKey(transaction.getCustomerId())) {
-                customerTransactionsMap.get(transaction.getCustomerId()).add(transaction);
-            } else {
-                List<Transaction> transactionsList = new ArrayList<>();
-                transactionsList.add(transaction);
-
-                customerTransactionsMap.put(transaction.getCustomerId(), transactionsList);
-            }
+        for (Long customerId : customersMap.keySet()) {
+            customerTransactionsMap.put(customerId, new ArrayList<>());
         }
+
+        for (Transaction transaction : transactions) {
+            customerTransactionsMap.get(transaction.getCustomerId()).add(transaction);
+        }
+
         return customerTransactionsMap;
     }
 
-    private CustomerPoints getCustomerPoints(final Customer customer, final List<Transaction> transactions) {
+    private CustomerPoints getCustomerPoints(final Customer customer, final List<Transaction> transactions, final List<String> months) {
 
         CustomerPoints customerPoints = new CustomerPoints();
 
-        Map<Integer, Long> monthlyPointsMap = new TreeMap<>();
+        Map<String, Long> monthlyPointsMap = getEmptyMonthlyPointsMap(months);
 
         long totalPoints = 0;
 
         for (Transaction transaction : transactions) {
 
-            int month = convertToLocalDate(transaction.getDate()).getMonthValue();
+            String month = convertToLocalDate(transaction.getDate()).getMonth().toString();
 
             long points = getPoints(transaction.getAmount());
 
             totalPoints += points;
 
-            if (monthlyPointsMap.containsKey(month)) {
-                monthlyPointsMap.put(month, monthlyPointsMap.get(month) + points);
-            } else {
-                monthlyPointsMap.put(month, points);
-            }
+            monthlyPointsMap.put(month, monthlyPointsMap.get(month) + points);
         }
 
         customerPoints.setCustomer(customer);
