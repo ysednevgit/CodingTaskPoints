@@ -1,4 +1,4 @@
-package com.yury.codingTask.points;
+package com.yury.codingTask.points.integrationtests;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;

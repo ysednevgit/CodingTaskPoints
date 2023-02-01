@@ -1,4 +1,4 @@
-package com.yury.codingTask.points;
+package com.yury.codingTask.points.unitests;
 
 import com.yury.codingTask.points.Response.GetPointsResponse;
 import com.yury.codingTask.points.delegate.PersistenceDelegate;
