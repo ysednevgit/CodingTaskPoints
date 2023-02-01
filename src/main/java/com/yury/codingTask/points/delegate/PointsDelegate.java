@@ -1,10 +1,16 @@
 package com.yury.codingTask.points.delegate;
 
+import com.yury.codingTask.points.Response.BaseResponse;
+import com.yury.codingTask.points.Response.ErrorResponse;
 import com.yury.codingTask.points.Response.GetPointsResponse;
 import com.yury.codingTask.points.entity.Customer;
 import com.yury.codingTask.points.entity.Transaction;
 import com.yury.codingTask.points.pojo.CustomerPoints;
+import lombok.Data;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
@@ -12,36 +18,50 @@ import java.time.ZoneId;
 import java.util.*;
 
 @Service
+@Data
 public class PointsDelegate {
 
     private static final int START_MONTHS = 3;
 
+    Logger logger = LoggerFactory.getLogger(PointsDelegate.class);
+
     @Autowired
     PersistenceDelegate persistenceDelegate;
 
-    public GetPointsResponse getPoints() {
+    public BaseResponse getPoints() {
 
-        GetPointsResponse response = new GetPointsResponse();
+        try {
 
-        List<CustomerPoints> customerPoints = new ArrayList<>();
+            GetPointsResponse response = new GetPointsResponse();
 
-        Map<Long, Customer> customersMap = getCustomersMap();
+            List<CustomerPoints> customerPoints = new ArrayList<>();
 
-        List<String> months = getMonths();
+            Map<Long, Customer> customersMap = getCustomersMap();
 
-        List<Transaction> transactions = persistenceDelegate.getTransactionRepository().findAllFromDate(getStartDate());
+            List<String> months = getMonths();
 
-        Map<Long, List<Transaction>> customerTransactionsMap = getCustomerTransactionsMap(transactions, customersMap);
+            List<Transaction> transactions = persistenceDelegate.getTransactionRepository().findAllFromDate(getStartDate());
 
-        for (Map.Entry<Long, List<Transaction>> entry : customerTransactionsMap.entrySet()) {
-            Customer customer = customersMap.get(entry.getKey());
+            Map<Long, List<Transaction>> customerTransactionsMap = getCustomerTransactionsMap(transactions, customersMap);
 
-            customerPoints.add(getCustomerPoints(customer, entry.getValue(), months));
+            for (Map.Entry<Long, List<Transaction>> entry : customerTransactionsMap.entrySet()) {
+                Customer customer = customersMap.get(entry.getKey());
+
+                customerPoints.add(getCustomerPoints(customer, entry.getValue(), months));
+            }
+
+            response.setCustomerPointsList(customerPoints);
+            response.setStatus(HttpStatus.OK);
+
+            return response;
+
+        } catch (Exception e) {
+
+            logger.error(e.getMessage(), e);
+
+            return new ErrorResponse(HttpStatus.INTERNAL_SERVER_ERROR, "Error occurred, please try again later.");
         }
 
-        response.setCustomerPointsList(customerPoints);
-
-        return response;
     }
 
     private Map<String, Long> getEmptyMonthlyPointsMap(List<String> months) {
@@ -138,7 +158,7 @@ public class PointsDelegate {
 
         Calendar calendar = Calendar.getInstance();
 
-        calendar.add(Calendar.MONTH, -START_MONTHS);
+        calendar.add(Calendar.MONTH, -START_MONTHS + 1);
         return calendar.getTime();
     }
 

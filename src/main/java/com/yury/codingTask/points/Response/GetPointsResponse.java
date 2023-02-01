@@ -7,7 +7,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Data
-public class GetPointsResponse {
+public class GetPointsResponse extends BaseResponse {
 
     private List<CustomerPoints> customerPointsList = new ArrayList<>();
 }

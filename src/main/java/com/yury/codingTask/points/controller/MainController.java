@@ -1,6 +1,7 @@
 package com.yury.codingTask.points.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.yury.codingTask.points.Response.BaseResponse;
 import com.yury.codingTask.points.Response.GetPointsResponse;
 import com.yury.codingTask.points.delegate.PointsDelegate;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,11 +22,11 @@ public class MainController {
 
 
     @GetMapping("/get_points")
-    public ResponseEntity<GetPointsResponse> getPoints() {
+    public ResponseEntity<BaseResponse> getPoints() {
 
-        GetPointsResponse response = pointsDelegate.getPoints();
+        BaseResponse response = pointsDelegate.getPoints();
 
-        return new ResponseEntity(response, HttpStatus.OK);
+        return new ResponseEntity(response, response.getStatus());
     }
 
 
